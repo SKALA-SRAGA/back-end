@@ -1,0 +1,4 @@
+fastapi
+uvicorn
+google-cloud-speech==2.0.0
+python-dotenv
