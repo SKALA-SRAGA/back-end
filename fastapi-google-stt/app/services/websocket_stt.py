@@ -108,9 +108,8 @@ async def process_audio_buffer(connection_id: str):
             if not audio_data:
                 continue
 
-            if len(audio_data) < 500:  # 최소 500 바이트 이상인 데이터만 처리
-                continue
-                
+            logger.info(f"수신된 오디오 데이터 크기: {len(audio_data)} bytes")
+            
             wav_audio = convert_webm_to_wav(audio_data)
             
             # Google STT API 호출
@@ -136,6 +135,7 @@ async def process_audio_buffer(connection_id: str):
 
 def convert_webm_to_wav(webm_data: bytes) -> bytes:
     """WebM 오디오를 WAV 형식으로 변환"""
+
     try:
         process = (
             ffmpeg

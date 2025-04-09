@@ -5,59 +5,113 @@
   <title>STT WebSocket 테스트</title>
 </head>
 <body>
-  <h2>🎤 마이크 STT 실시간 변환</h2>
-  <button id="start">▶️ 시작</button>
-  <button id="stop" disabled>⏹️ 중지</button>
+  <h2>🎤 마이크 STT 녹음 및 전송</h2>
+  <button id="start">▶️ 녹음 시작</button>
+  <button id="stop" disabled>⏹️ 녹음 중지 및 전송</button>
   <pre id="result"></pre>
 
   <script>
     let socket;
     let mediaRecorder;
     let audioStream;
+    let recordedChunks = [];
 
     const resultEl = document.getElementById("result");
     const startBtn = document.getElementById("start");
     const stopBtn = document.getElementById("stop");
 
-    startBtn.onclick = async () => {
-      // 마이크 권한 요청 및 MediaStream 열기
-      audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(audioStream, { mimeType: "audio/webm" });
-
-      // WebSocket 연결
+    // WebSocket 연결
+    const connectWebSocket = () => {
       socket = new WebSocket("ws://localhost:8000/stt/websocket/");
-
-      socket.onmessage = (event) => {
-        resultEl.textContent += `\n📝 ${event.data}`;
-      };
+      socket.binaryType = "arraybuffer";
 
       socket.onopen = () => {
-        resultEl.textContent = "🔴 STT 시작됨...\n";
-        mediaRecorder.start(250); // 250ms 단위로 chunk 전송
-
-        mediaRecorder.ondataavailable = (e) => {
-          if (socket.readyState === WebSocket.OPEN) {
-            socket.send(e.data);
-          }
-        };
+        resultEl.textContent = "🔴 WebSocket 연결됨...\n";
       };
 
-      socket.onclose = () => {
-        resultEl.textContent += "\n✅ 연결 종료됨";
+      socket.onmessage = (event) => {
+        resultEl.textContent += `\n📝 서버 응답: ${event.data}`;
       };
 
-      startBtn.disabled = true;
-      stopBtn.disabled = false;
+      socket.onerror = (error) => {
+        console.error("WebSocket 오류:", error);
+        resultEl.textContent += `\n❌ WebSocket 오류: ${error.message || "알 수 없는 오류"}`;
+      };
+
+      socket.onclose = (event) => {
+        resultEl.textContent += `\n✅ WebSocket 연결 종료됨 (코드: ${event.code})`;
+      };
     };
 
+    // 녹음 시작
+    startBtn.onclick = async () => {
+      try {
+        // 마이크 권한 요청 및 MediaStream 열기
+        audioStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            sampleRate: 16000,
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+          },
+        });
+
+        // MediaRecorder 설정
+        mediaRecorder = new MediaRecorder(audioStream, {
+          mimeType: "audio/webm;codecs=opus",
+          audioBitsPerSecond: 16000,
+        });
+
+        recordedChunks = []; // 녹음 데이터 초기화
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data.size > 0) {
+            recordedChunks.push(e.data); // 녹음된 청크 저장
+          }
+        };
+
+        mediaRecorder.onstop = () => {
+          // 녹음 중지 후 WebSocket으로 데이터 전송
+          const blob = new Blob(recordedChunks, { type: "audio/webm" });
+          const reader = new FileReader();
+          reader.onload = () => {
+            if (socket.readyState === WebSocket.OPEN) {
+              socket.send(reader.result); // WebSocket으로 데이터 전송
+              resultEl.textContent += "\n📤 녹음 데이터 전송 완료!";
+            } else {
+              resultEl.textContent += "\n❌ WebSocket 연결이 닫혀 있음.";
+            }
+          };
+          reader.readAsArrayBuffer(blob);
+        };
+
+        mediaRecorder.start(); // 녹음 시작
+        resultEl.textContent += "\n🎙️ 녹음 시작됨...";
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+      } catch (error) {
+        console.error("오류 발생:", error);
+        resultEl.textContent = `오류: ${error.message}`;
+      }
+    };
+
+    // 녹음 중지
     stopBtn.onclick = () => {
-      mediaRecorder.stop();
-      audioStream.getTracks().forEach(track => track.stop());
-      socket.close();
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop(); // 녹음 중지
+        resultEl.textContent += "\n⏹️ 녹음 중지됨.";
+      }
+
+      if (audioStream) {
+        audioStream.getTracks().forEach((track) => track.stop()); // 마이크 스트림 종료
+      }
 
       startBtn.disabled = false;
       stopBtn.disabled = true;
     };
+
+    // WebSocket 연결 초기화
+    connectWebSocket();
   </script>
 </body>
 </html>
