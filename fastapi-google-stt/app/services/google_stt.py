@@ -1,6 +1,9 @@
 import os
+from dotenv import load_dotenv
 from google.cloud.speech_v2 import SpeechClient
 from google.cloud.speech_v2.types import cloud_speech as cloud_speech_types
+
+load_dotenv()
 
 PROJECT_ID = os.getenv("PROJECT_ID")
 
