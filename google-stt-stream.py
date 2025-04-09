@@ -64,3 +64,5 @@ def transcribe_streaming_v2(
             print(f"Transcript: {result.alternatives[0].transcript}")
 
     return responses
+
+transcribe_streaming_v2("./tts/ai_learning.mp3")
