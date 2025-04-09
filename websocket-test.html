@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>STT WebSocket 테스트</title>
+</head>
+<body>
+  <h2>🎤 마이크 STT 실시간 변환</h2>
+  <button id="start">▶️ 시작</button>
+  <button id="stop" disabled>⏹️ 중지</button>
+  <pre id="result"></pre>
+
+  <script>
+    let socket;
+    let mediaRecorder;
+    let audioStream;
+
+    const resultEl = document.getElementById("result");
+    const startBtn = document.getElementById("start");
+    const stopBtn = document.getElementById("stop");
+
+    startBtn.onclick = async () => {
+      // 마이크 권한 요청 및 MediaStream 열기
+      audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(audioStream, { mimeType: "audio/webm" });
+
+      // WebSocket 연결
+      socket = new WebSocket("ws://localhost:8000/stt/websocket/");
+
+      socket.onmessage = (event) => {
+        resultEl.textContent += `\n📝 ${event.data}`;
+      };
+
+      socket.onopen = () => {
+        resultEl.textContent = "🔴 STT 시작됨...\n";
+        mediaRecorder.start(250); // 250ms 단위로 chunk 전송
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (socket.readyState === WebSocket.OPEN) {
+            socket.send(e.data);
+          }
+        };
+      };
+
+      socket.onclose = () => {
+        resultEl.textContent += "\n✅ 연결 종료됨";
+      };
+
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+    };
+
+    stopBtn.onclick = () => {
+      mediaRecorder.stop();
+      audioStream.getTracks().forEach(track => track.stop());
+      socket.close();
+
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    };
+  </script>
+</body>
+</html>
