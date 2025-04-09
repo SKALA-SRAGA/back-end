@@ -3,3 +3,4 @@
 __pycache__/
 .env
 speech-to-text-key.json
+sraga/
