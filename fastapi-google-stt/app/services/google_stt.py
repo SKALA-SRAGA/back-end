@@ -7,7 +7,7 @@ load_dotenv()
 
 PROJECT_ID = os.getenv("PROJECT_ID")
 
-async def transcribe_streaming_v2(audio_content: bytes):
+async def transcribe_streaming_v2(audio_content: bytes, lang: str = "ko-KR"):
     client = SpeechClient()
 
     # 데이터를 청크로 나눔
@@ -22,7 +22,7 @@ async def transcribe_streaming_v2(audio_content: bytes):
 
     recognition_config = cloud_speech_types.RecognitionConfig(
         auto_decoding_config=cloud_speech_types.AutoDetectDecodingConfig(),
-        language_codes=["en-US"],
+        language_codes=[lang],
         model="long",
     )
     streaming_config = cloud_speech_types.StreamingRecognitionConfig(
