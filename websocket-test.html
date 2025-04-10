@@ -1,117 +1,129 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <title>STT WebSocket 테스트</title>
-</head>
-<body>
-  <h2>🎤 마이크 STT 녹음 및 전송</h2>
-  <button id="start">▶️ 녹음 시작</button>
-  <button id="stop" disabled>⏹️ 녹음 중지 및 전송</button>
-  <pre id="result"></pre>
+  <head>
+    <meta charset="UTF-8" />
+    <title>STT WebSocket 테스트</title>
+  </head>
+  <body>
+    <h2>🎤 마이크 STT 녹음 및 전송</h2>
+    <button id="start">▶️ 녹음 시작</button>
+    <button id="stop" disabled>⏹️ 녹음 중지 및 전송</button>
+    <pre id="result"></pre>
 
-  <script>
-    let socket;
-    let mediaRecorder;
-    let audioStream;
-    let recordedChunks = [];
+    <script>
+      let socket;
+      let mediaRecorder;
+      let audioStream;
+      let recordedChunks = [];
 
-    const resultEl = document.getElementById("result");
-    const startBtn = document.getElementById("start");
-    const stopBtn = document.getElementById("stop");
+      const resultEl = document.getElementById("result");
+      const startBtn = document.getElementById("start");
+      const stopBtn = document.getElementById("stop");
 
-    // WebSocket 연결
-    const connectWebSocket = () => {
-      socket = new WebSocket("ws://localhost:8000/stt/websocket/");
-      socket.binaryType = "arraybuffer";
+      // WebSocket 연결
+      const connectWebSocket = () => {
+        socket = new WebSocket("ws://localhost:8000/stt/websocket/");
+        socket.binaryType = "arraybuffer";
 
-      socket.onopen = () => {
-        resultEl.textContent = "🔴 WebSocket 연결됨...\n";
-      };
-
-      socket.onmessage = (event) => {
-        resultEl.textContent += `\n📝 서버 응답: ${event.data}`;
-      };
-
-      socket.onerror = (error) => {
-        console.error("WebSocket 오류:", error);
-        resultEl.textContent += `\n❌ WebSocket 오류: ${error.message || "알 수 없는 오류"}`;
-      };
-
-      socket.onclose = (event) => {
-        resultEl.textContent += `\n✅ WebSocket 연결 종료됨 (코드: ${event.code})`;
-      };
-    };
-
-    // 녹음 시작
-    startBtn.onclick = async () => {
-      try {
-        // 마이크 권한 요청 및 MediaStream 열기
-        audioStream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            sampleRate: 16000,
-            channelCount: 1,
-            echoCancellation: true,
-            noiseSuppression: true,
-          },
-        });
-
-        // MediaRecorder 설정
-        mediaRecorder = new MediaRecorder(audioStream, {
-          mimeType: "audio/webm;codecs=opus",
-          audioBitsPerSecond: 16000,
-        });
-
-        recordedChunks = []; // 녹음 데이터 초기화
-
-        mediaRecorder.ondataavailable = (e) => {
-          if (e.data.size > 0) {
-            recordedChunks.push(e.data); // 녹음된 청크 저장
-          }
+        socket.onopen = () => {
+          resultEl.textContent = "🔴 WebSocket 연결됨...\n";
         };
 
-        mediaRecorder.onstop = () => {
-          // 녹음 중지 후 WebSocket으로 데이터 전송
-          const blob = new Blob(recordedChunks, { type: "audio/webm" });
-          const reader = new FileReader();
-          reader.onload = () => {
-            if (socket.readyState === WebSocket.OPEN) {
-              socket.send(reader.result); // WebSocket으로 데이터 전송
-              resultEl.textContent += "\n📤 녹음 데이터 전송 완료!";
-            } else {
-              resultEl.textContent += "\n❌ WebSocket 연결이 닫혀 있음.";
+        socket.onmessage = (event) => {
+          resultEl.textContent += `\n📝 서버 응답: ${event.data}`;
+        };
+
+        socket.onerror = (error) => {
+          console.error("WebSocket 오류:", error);
+          resultEl.textContent += `\n❌ WebSocket 오류: ${
+            error.message || "알 수 없는 오류"
+          }`;
+        };
+
+        socket.onclose = (event) => {
+          resultEl.textContent += `\n✅ WebSocket 연결 종료됨 (코드: ${event.code})`;
+        };
+      };
+
+      // 녹음 시작
+      startBtn.onclick = async () => {
+        try {
+          // 마이크 권한 요청 및 MediaStream 열기
+          audioStream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              sampleRate: 16000,
+              channelCount: 1,
+              echoCancellation: true,
+              noiseSuppression: true,
+            },
+          });
+
+          // WebSocket으로 "start" 메시지 전송
+          if (socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({ type: "start", lang: "ko-KR" }));
+            resultEl.textContent += "\n📤 'start' 메시지 전송 완료!";
+          }
+
+          // MediaRecorder 설정
+          mediaRecorder = new MediaRecorder(audioStream, {
+            mimeType: "audio/webm;codecs=opus",
+            audioBitsPerSecond: 16000,
+          });
+
+          recordedChunks = []; // 녹음 데이터 초기화
+
+          mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) {
+              recordedChunks.push(e.data); // 녹음된 청크 저장
             }
           };
-          reader.readAsArrayBuffer(blob);
-        };
 
-        mediaRecorder.start(); // 녹음 시작
-        resultEl.textContent += "\n🎙️ 녹음 시작됨...";
-        startBtn.disabled = true;
-        stopBtn.disabled = false;
-      } catch (error) {
-        console.error("오류 발생:", error);
-        resultEl.textContent = `오류: ${error.message}`;
-      }
-    };
+          mediaRecorder.onstop = () => {
+            // 녹음 중지 후 WebSocket으로 데이터 전송
+            const blob = new Blob(recordedChunks, { type: "audio/webm" });
+            const reader = new FileReader();
+            reader.onload = () => {
+              if (socket.readyState === WebSocket.OPEN) {
+                socket.send(reader.result); // WebSocket으로 데이터 전송
+                resultEl.textContent += "\n📤 녹음 데이터 전송 완료!";
 
-    // 녹음 중지
-    stopBtn.onclick = () => {
-      if (mediaRecorder && mediaRecorder.state === "recording") {
-        mediaRecorder.stop(); // 녹음 중지
-        resultEl.textContent += "\n⏹️ 녹음 중지됨.";
-      }
+                // WebSocket으로 "end" 메시지 전송
+                socket.send(JSON.stringify({ type: "end" }));
+                resultEl.textContent += "\n📤 'end' 메시지 전송 완료!";
+              } else {
+                resultEl.textContent += "\n❌ WebSocket 연결이 닫혀 있음.";
+              }
+            };
+            reader.readAsArrayBuffer(blob);
+          };
 
-      if (audioStream) {
-        audioStream.getTracks().forEach((track) => track.stop()); // 마이크 스트림 종료
-      }
+          mediaRecorder.start(); // 녹음 시작
+          resultEl.textContent += "\n🎙️ 녹음 시작됨...";
+          startBtn.disabled = true;
+          stopBtn.disabled = false;
+        } catch (error) {
+          console.error("오류 발생:", error);
+          resultEl.textContent = `오류: ${error.message}`;
+        }
+      };
 
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-    };
+      // 녹음 중지
+      stopBtn.onclick = () => {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+          mediaRecorder.stop(); // 녹음 중지
+          resultEl.textContent += "\n⏹️ 녹음 중지됨.";
+        }
 
-    // WebSocket 연결 초기화
-    connectWebSocket();
-  </script>
-</body>
+        if (audioStream) {
+          audioStream.getTracks().forEach((track) => track.stop()); // 마이크 스트림 종료
+        }
+
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+      };
+
+      // WebSocket 연결 초기화
+      connectWebSocket();
+    </script>
+  </body>
 </html>

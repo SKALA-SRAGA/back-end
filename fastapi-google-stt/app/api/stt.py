@@ -2,15 +2,12 @@ import logging
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, UploadFile, File
 from fastapi.responses import StreamingResponse
 from app.services.google_stt import transcribe_streaming_v2
-from app.services.websocket_stt import handle_websocket_connection, initialize_service
+from app.services.websocket_stt import handle_websocket_connection
 
 router = APIRouter()
 
 # 로깅 설정
 logger = logging.getLogger(__name__)
-
-# Google STT 서비스 초기화
-initialize_service()
 
 @router.post("/transcribe/")
 async def transcribe_audio(file: UploadFile = File(...)):
@@ -44,7 +41,8 @@ async def websocket_endpoint(websocket: WebSocket):
     """웹소켓 엔드포인트 - 클라이언트로부터 오디오 데이터를 수신하고 텍스트로 변환"""
     try:
         # 웹소켓 연결 및 처리 로직은 websocket_stt.py로 위임
-        await handle_websocket_connection(websocket, target_lang="ko-KR")
+        await websocket.accept()
+        await handle_websocket_connection(websocket)
     except WebSocketDisconnect:
         logger.info("WebSocket 연결이 종료되었습니다")
     except Exception as e:
