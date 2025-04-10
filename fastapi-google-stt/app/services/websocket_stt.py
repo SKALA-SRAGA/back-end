@@ -94,7 +94,7 @@ async def transcribe_streaming(audio_content: bytes, language_code: str = "ko-KR
         client = SpeechClient()
         
         # 데이터를 청크로 나눔
-        chunk_length = len(audio_content) // 10
+        chunk_length = len(audio_content) // 8
         if chunk_length <= 0:
             chunk_length = len(audio_content)
             
@@ -114,9 +114,14 @@ async def transcribe_streaming(audio_content: bytes, language_code: str = "ko-KR
             language_codes=[language_code],  # 동적으로 언어 설정
             model="long",
         )
+
+        streming_feature = cloud_speech_types.StreamingRecognitionFeatures(
+            interim_results=True,
+        )
         
         streaming_config = cloud_speech_types.StreamingRecognitionConfig(
-            config=recognition_config
+            config=recognition_config,
+            streaming_features=streming_feature,
         )
         
         config_request = cloud_speech_types.StreamingRecognizeRequest(
@@ -133,11 +138,24 @@ async def transcribe_streaming(audio_content: bytes, language_code: str = "ko-KR
             requests=requests(config_request, audio_requests)
         )
 
-        # # 스트리밍 방식으로 응답 반환
+        # 스트리밍 방식으로 응답 반환
+        # for response in responses_iterator:
+        #     for result in response.results:
+        #         transcript = result.alternatives[0].transcript
+        #         yield f"data: {transcript}\n\n"
+
+         # 스트리밍 방식으로 응답 반환
         for response in responses_iterator:
             for result in response.results:
+                if not result.alternatives:
+                    continue
+                    
                 transcript = result.alternatives[0].transcript
-                yield f"data: {transcript}\n\n"
+                is_final = result.is_final
+                
+                # 최종 결과와 중간 결과 구분
+                prefix = "[최종] " if is_final else "[임시] "
+                yield f"{prefix}{transcript}"
                 
     except Exception as e:
         logging.error(f"Speech-to-Text 에러: {str(e)}")
