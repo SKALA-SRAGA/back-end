@@ -137,7 +137,7 @@ async def transcribe_streaming(audio_content: bytes, language_code: str = "ko-KR
         for response in responses_iterator:
             for result in response.results:
                 transcript = result.alternatives[0].transcript
-                yield f"data: {transcript}\n\n"  # EventStream 형식으로 반환
+                yield f"data: {transcript}\n\n"
                 
     except Exception as e:
         logging.error(f"Speech-to-Text 에러: {str(e)}")
