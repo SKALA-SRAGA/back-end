@@ -1,16 +1,20 @@
 import logging
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, UploadFile, File
 from fastapi.responses import StreamingResponse
-from app.services.google_stt import transcribe_streaming_v2
-from app.services.websocket_stt import handle_websocket_connection
+from app.services.google_stt_service import transcribe_streaming_v2
+from app.services.websocket_stt_service import handle_websocket_connection
 
 router = APIRouter()
 
 # 로깅 설정
 logger = logging.getLogger(__name__)
 
-@router.post("/transcribe/")
+@router.post("/transcribe")
 async def transcribe_audio(file: UploadFile = File(...)):
+    """
+    ## 오디오 파일 전송 및 STT 결과 변환 - SSE 스트리밍 방식
+    - file: mp3, wav, ogg 등 오디오 파일
+    """
     try:
         print(f"File type: {type(file)}")  # 디버깅용 로그
         print(f"File name: {file.filename}")  # 파일 이름 확인
@@ -36,9 +40,11 @@ async def transcribe_audio(file: UploadFile = File(...)):
 #     print("WebSocket connection accepted")
 #     await websocket_streaming(websocket)
 
-@router.websocket("/websocket/")
+@router.websocket("/websocket")
 async def websocket_endpoint(websocket: WebSocket):
-    """웹소켓 엔드포인트 - 클라이언트로부터 오디오 데이터를 수신하고 텍스트로 변환"""
+    """
+    ## 웹소켓으로 오디오 파일 전송 및 실시간 STT 결과 변환
+    """
     try:
         # 웹소켓 연결 및 처리 로직은 websocket_stt.py로 위임
         await websocket.accept()
