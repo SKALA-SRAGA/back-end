@@ -2,7 +2,8 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.api import stt, openai
+from app.api import stt_router, openai_router, user_router
+from app.db.reset_database import reset_database
 
 app = FastAPI()
 
@@ -25,9 +26,11 @@ app.add_middleware(
 # 정적 파일 서빙 설정
 app.mount("/static", StaticFiles(directory="app/static", html=True), name="static")
 
-app.include_router(stt.router, prefix="/stt", tags=["Google STT"])
-app.include_router(openai.router, prefix="/openai", tags=["OpenAI"])
+@app.on_event("startup")
+async def on_startup():
+    """애플리케이션 시작 시 데이터베이스 초기화"""
+    await reset_database()
 
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to the FastAPI Google Speech-to-Text service!"}
+app.include_router(stt_router.router, prefix="/stt", tags=["Google STT"])
+app.include_router(openai_router.router, prefix="/openai", tags=["OpenAI"])
+app.include_router(user_router.router, prefix="/user", tags=["User"])
