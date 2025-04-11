@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 from fastapi import WebSocket
 from google.cloud.speech_v2 import SpeechClient
 from google.cloud.speech_v2.types import cloud_speech as cloud_speech_types
-from app.services.openai_vector_store import add_text
 
 # 환경 변수 로드
 load_dotenv()
