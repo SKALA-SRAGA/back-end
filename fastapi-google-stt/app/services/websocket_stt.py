@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from fastapi import WebSocket
 from google.cloud.speech_v2 import SpeechClient
 from google.cloud.speech_v2.types import cloud_speech as cloud_speech_types
+from app.services.openai_vector_store import add_text
 
 # 환경 변수 로드
 load_dotenv()
@@ -25,6 +26,8 @@ async def handle_websocket_connection(websocket: WebSocket):
     is_active = False
     language_code = "ko-KR"  # 기본 언어
     
+    meeting_id = "hungry" # 미팅 ID (여러 번 실행 했을 경우, 미팅 구분을 위해)
+
     # 스레드 간 데이터 교환을 위한 큐
     audio_queue = queue.Queue()
     response_queue = asyncio.Queue()
@@ -75,7 +78,7 @@ async def handle_websocket_connection(websocket: WebSocket):
                         stt_thread.start()
                         
                         # 응답 처리 태스크 시작
-                        asyncio.create_task(process_responses(response_queue, websocket))
+                        asyncio.create_task(process_responses(response_queue, websocket, language_code, meeting_id))
                         
                     elif msg_type == "end":
                         # 녹음 종료 명령
@@ -193,7 +196,7 @@ def run_stt_stream(audio_queue, response_queue, language_code):
         except:
             pass
 
-async def process_responses(response_queue, websocket):
+async def process_responses(response_queue, websocket, language_code, meeting_id):
     """
     STT 응답을 처리하고 WebSocket으로 전송하는 함수
     중간 결과는 'interim' 타입으로, 최종 결과는 'final' 타입으로 전송합니다.
@@ -240,6 +243,9 @@ async def process_responses(response_queue, websocket):
                     }
                     await websocket.send_text(json.dumps(json_response, ensure_ascii=False))
                     last_final_text = transcript
+
+                    # 실시간으로 OpenAI 임베딩 저장
+                    add_text(transcript, language_code, meeting_id)
                     
                 # 중간 결과 초기화
                 last_interim_text = ""
@@ -265,3 +271,4 @@ async def process_responses(response_queue, websocket):
             "message": f"응답 처리 오류: {str(e)}"
         }
         await websocket.send_text(json.dumps(error_response, ensure_ascii=False))
+
