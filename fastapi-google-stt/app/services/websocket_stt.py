@@ -24,7 +24,7 @@ async def handle_websocket_connection(websocket: WebSocket):
     # 상태 관리 변수
     is_active = False
     language_code = "ko-KR"  # 기본 언어
-    
+
     # 스레드 간 데이터 교환을 위한 큐
     audio_queue = queue.Queue()
     response_queue = asyncio.Queue()
@@ -240,7 +240,7 @@ async def process_responses(response_queue, websocket):
                     }
                     await websocket.send_text(json.dumps(json_response, ensure_ascii=False))
                     last_final_text = transcript
-                    
+
                 # 중간 결과 초기화
                 last_interim_text = ""
                 
@@ -265,3 +265,4 @@ async def process_responses(response_queue, websocket):
             "message": f"응답 처리 오류: {str(e)}"
         }
         await websocket.send_text(json.dumps(error_response, ensure_ascii=False))
+
