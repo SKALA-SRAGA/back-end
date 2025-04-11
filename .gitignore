@@ -6,3 +6,4 @@ speech-to-text-key.json
 sraga/
 .chroma_db/*
 .chroma_db/.gitkeep
+test.ipynb

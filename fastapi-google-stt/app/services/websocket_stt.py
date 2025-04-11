@@ -25,8 +25,6 @@ async def handle_websocket_connection(websocket: WebSocket):
     # 상태 관리 변수
     is_active = False
     language_code = "ko-KR"  # 기본 언어
-    
-    meeting_id = "hungry" # 미팅 ID (여러 번 실행 했을 경우, 미팅 구분을 위해)
 
     # 스레드 간 데이터 교환을 위한 큐
     audio_queue = queue.Queue()
@@ -78,7 +76,7 @@ async def handle_websocket_connection(websocket: WebSocket):
                         stt_thread.start()
                         
                         # 응답 처리 태스크 시작
-                        asyncio.create_task(process_responses(response_queue, websocket, language_code, meeting_id))
+                        asyncio.create_task(process_responses(response_queue, websocket))
                         
                     elif msg_type == "end":
                         # 녹음 종료 명령
@@ -196,7 +194,7 @@ def run_stt_stream(audio_queue, response_queue, language_code):
         except:
             pass
 
-async def process_responses(response_queue, websocket, language_code, meeting_id):
+async def process_responses(response_queue, websocket):
     """
     STT 응답을 처리하고 WebSocket으로 전송하는 함수
     중간 결과는 'interim' 타입으로, 최종 결과는 'final' 타입으로 전송합니다.
@@ -244,9 +242,6 @@ async def process_responses(response_queue, websocket, language_code, meeting_id
                     await websocket.send_text(json.dumps(json_response, ensure_ascii=False))
                     last_final_text = transcript
 
-                    # 실시간으로 OpenAI 임베딩 저장
-                    add_text(transcript, language_code, meeting_id)
-                    
                 # 중간 결과 초기화
                 last_interim_text = ""
                 
