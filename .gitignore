@@ -7,3 +7,4 @@ sraga/
 .chroma_db/*
 .chroma_db/.gitkeep
 test.ipynb
+*.pem
