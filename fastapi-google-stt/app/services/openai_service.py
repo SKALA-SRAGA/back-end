@@ -4,7 +4,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_teddynote.messages import stream_response
 from dotenv import load_dotenv
-from app.models.message_request import MessageRequest
+from app.dto.message_request import MessageRequest
 
 load_dotenv()
 
