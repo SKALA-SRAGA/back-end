@@ -54,3 +54,39 @@ async def register_user(user: service.CreateUserRequest, db: AsyncSession = Depe
     except Exception as e:
         logger.error(f"Error registering user: {str(e)}")
         return {"message": "Internal server error"}, 500
+    
+@router.patch("/update/{user_id}")
+async def update_user(user_id: int, user: service.UpdateUserRequest, db: AsyncSession = Depends(get_db)):
+    """
+    ## 유저 정보 수정
+    - user_id: 유저 ID
+    - user: UpdateUserRequest
+        - name: 유저 이름
+    """
+    try:
+        original_user = await service.get_user_by_id(db, user_id)
+        if not original_user:
+            return {"message": "User not found"}, 404
+        
+        updated_user = await service.update(db, user, original_user)
+        return updated_user
+    except Exception as e:
+        logger.error(f"Error updating user: {str(e)}")
+        return {"message": "Internal server error"}, 500
+    
+@router.delete("/delete/{user_id}")
+async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    ## 유저 삭제
+    - user_id: 유저 ID
+    """
+    try:
+        original_user = await service.get_user_by_id(db, user_id)
+        if not original_user:
+            return {"message": "User not found"}, 404
+        
+        await service.delete(db, original_user)
+        return {"message": "User deleted successfully"}
+    except Exception as e:
+        logger.error(f"Error deleting user: {str(e)}")
+        return {"message": "Internal server error"}, 500

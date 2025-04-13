@@ -12,6 +12,6 @@ class User(Base):
     script = relationship(
         "Script",
         cascade="all, delete-orphan",
-        lazy="selectin"  # ✅ 비동기 처리를 위해 lazy="selectin" 사용
+        lazy="dynamic"  # ✅ 비동기 처리를 위해 lazy="selectin" 사용
     )
 
