@@ -11,13 +11,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 async def get_user_by_id(db: AsyncSession, id: str) -> dict:
     """
-    유저 서비스 객체를 반환하는 함수
+    id로 유저를 찾는 함수
     """
     return await find_user_by_id(db, id)
 
 async def get_user_by_name(db: AsyncSession, name: str) -> User | None:
     """
-    유저 서비스를 반환하는 함수
+    name으로 유저를 찾는 함수
     """
     return await find_user_by_name(db, name)
 
