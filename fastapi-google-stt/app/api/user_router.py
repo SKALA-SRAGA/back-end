@@ -6,7 +6,6 @@ from app.db.database import get_db
 
 router = APIRouter()
 
-# 로깅 설정
 logger = logging.getLogger(__name__)
 
 @router.get("/{name}")
