@@ -5,7 +5,7 @@ from app.db.database import get_db
 
 from app.services.openai_service import get_streaming_message_from_openai
 from app.services.log_script_service import logger
-from app.services.openai_vector_store import add_text, search_text
+from app.services.openai_vector_store import add_text
 from fastapi.responses import StreamingResponse
 from app.dto.message_request import MessageRequest
 
