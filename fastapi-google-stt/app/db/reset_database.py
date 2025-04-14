@@ -17,7 +17,7 @@ DB_NAME = os.getenv("DB_NAME")
 
 ASYNC_DB_URL = f"mysql+aiomysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
 
-async_engine = create_async_engine(ASYNC_DB_URL, echo=True)
+async_engine = create_async_engine(ASYNC_DB_URL, echo=True, pool_recycle=3600)
 
 async def reset_database(force_reset: bool = False):
     async with async_engine.begin() as conn:
