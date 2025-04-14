@@ -5,6 +5,7 @@ import logging
 import asyncio
 import threading
 import queue
+import time
 from dotenv import load_dotenv
 from fastapi import WebSocket
 from google.cloud.speech_v2 import SpeechClient
@@ -182,7 +183,7 @@ def run_stt_stream(audio_queue, response_queue, language_code):
                     "is_final": is_final,
                     "confidence": confidence,
                 }))
-        
+
     except Exception as e:
         logging.error(f"STT 스트리밍 오류: {str(e)}")
         # 오류 정보 전달

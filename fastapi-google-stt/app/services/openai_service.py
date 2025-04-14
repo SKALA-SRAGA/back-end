@@ -1,10 +1,11 @@
 import logging
+import asyncio
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_teddynote.messages import stream_response
 from dotenv import load_dotenv
-from app.models.message_request import MessageRequest
+from app.dto.message_request import MessageRequest
 
 load_dotenv()
 
@@ -17,16 +18,14 @@ chain = prompt | model | output_parser
 async def get_streaming_message_from_openai(data: MessageRequest):
     try:
         # 스트리밍 응답 생성
-        response = chain.stream({
+        response = chain.astream({
             "text": data.message,
             "lang": data.lang
         })
 
-        logging.info("Translation response started")
-        # stream_response(response)
-
-        for token in response:
+        async for token in response:
             content = f"data: {token}\n\n"
+            logging.info(f"Yielding token: {content}")
             yield content
         yield "data: [DONE]\n\n"
     except Exception as e:
