@@ -5,3 +5,7 @@ python-dotenv
 langchain-openai
 langchain-teddynote
 langchain-core
+langchain-chroma
+aiomysql
+websockets
+langchain-embeddings
