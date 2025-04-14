@@ -1,3 +1,4 @@
 .env
 .cert
 speech-to-text-key.json
+/output

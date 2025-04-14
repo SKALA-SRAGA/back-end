@@ -2,8 +2,8 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 
 from app.db.database import Base
 
-class Script(Base):
-    __tablename__ = "script"
+class Receipt(Base):
+    __tablename__ = "receipt"
 
     id = Column(String(30), primary_key=True)
     user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"))

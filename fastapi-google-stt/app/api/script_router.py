@@ -4,18 +4,20 @@ import app.services.log_script_service as service
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 
+from app.dto.script_request import CreateScriptRequest
+
 router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
-@router.get("/create/{user_id}")
-async def create_script(user_id: int, db: AsyncSession = Depends(get_db)):
+@router.post("/create")
+async def create_script(request: CreateScriptRequest, db: AsyncSession = Depends(get_db)):
     """
     ## 스크립트 생성
-    - user_id: 유저 ID
+    - request: 유저 ID
     """
     try:
-        new_log_script = await service.create(db, user_id)
+        new_log_script = await service.create(db, request.user_id, request.name)
         return new_log_script
     except Exception as e:
         logger.error(f"Error creating log script: {str(e)}")
@@ -48,7 +50,7 @@ async def get_script_by_id(script_id: str, db: AsyncSession = Depends(get_db)):
         if script:
             return script
         else:
-            return {"message": "Script not found"}, 404
+            return {"message": "채팅 내역을 찾을 수 없습니다."}, 404
     except Exception as e:
         logger.error(f"Error retrieving script: {str(e)}")
-        return {"message": "Internal server error"}, 500
+        return {"message": "채팅 내역을 찾을 수 없습니다."}, 404

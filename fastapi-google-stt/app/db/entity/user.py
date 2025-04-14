@@ -15,3 +15,9 @@ class User(Base):
         lazy="dynamic"  # ✅ 비동기 처리를 위해 lazy="selectin" 사용
     )
 
+    receipt = relationship(
+        "Receipt",
+        cascade="all, delete-orphan",
+        lazy="dynamic"  # ✅ 비동기 처리를 위해 lazy="selectin" 사용
+    )
+
