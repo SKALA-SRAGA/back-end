@@ -1,4 +1,3 @@
-# vector_store_openai.py - vector 저장
 import os
 from datetime import datetime
 from dotenv import load_dotenv
@@ -11,18 +10,16 @@ load_dotenv()
 OPENAI_API_KEY=os.getenv("OPENAI_API_KEY")
 VECTOR_DB_PATH=os.getenv("VECTOR_DB_PATH")
 
-# OpenAI 임베딩 초기화
-embedding = OpenAIEmbeddings(
-    model="text-embedding-3-small",
-    openai_api_key=OPENAI_API_KEY
-)
-
 # Chroma 벡터스토어 초기화
-vectordb = Chroma(
-    collection_name="my_texts",                        # 컬렉션 이름 (카테고리처럼 생각)
-    embedding_function=embedding,                      # 위에 만든 임베딩 모델
-    persist_directory=VECTOR_DB_PATH     # 저장 경로
-)
+def init_vectordb():
+    return Chroma(
+        collection_name="my_texts",
+        embedding_function=OpenAIEmbeddings(
+            model="text-embedding-3-small",
+            openai_api_key=OPENAI_API_KEY
+        ),
+        persist_directory=VECTOR_DB_PATH
+    )
 
 # 텍스트를 임베딩하고 DB에 저장하는 함수
 async def add_text(text: str, language_code: str, script_id:str):
