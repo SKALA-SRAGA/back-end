@@ -24,13 +24,13 @@ load_dotenv()
 
 PATH = os.getenv("SCRIPT_PATH")
 
-async def create(db: AsyncSession, user_id: int) -> ScriptIdResponse:
+async def create(db: AsyncSession, user_id: int, name: str) -> ScriptIdResponse:
     """
     스크립트를 생성하는 함수
     """
     id = generate_base64_uuid()
     file_path = PATH + "/" + id + ".txt"
-    script = Script(id=id, user_id=user_id, file_path=file_path)
+    script = Script(id=id, user_id=user_id, name=name, file_path=file_path)
     
     await create_script(db, script)
 
