@@ -9,9 +9,9 @@ import os
 from pathlib import Path
 import json
 
-from app.services.receipt_service import process_multiple_images
 from app.services.docs_service import create_expense_report
 from app.services.receipt_service import (
+    process_multiple_images,
     create_receipt,
     get_my_receipts,
     generate_base64_uuid
@@ -88,16 +88,16 @@ async def process_receipts(
 
 
 @router.get("/download")
-async def download_report(user_id: str = Query(...)):
+async def download_report(receipt_id: str = Query(...)):
     """생성된 문서를 다운로드합니다."""
-    output_path = Path("output") / f"{user_id}_expense_report.docx"
+    output_path = Path("output") / f"{receipt_id}_expense_report.docx"
 
     if not output_path.exists():
         raise HTTPException(status_code=404, detail="문서가 존재하지 않습니다.")
 
     return FileResponse(
         path=output_path,
-        filename=f"{user_id}_expense_report.docx",
+        filename=f"{receipt_id}_expense_report.docx",
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     )
 
