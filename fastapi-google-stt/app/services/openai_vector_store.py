@@ -32,7 +32,3 @@ async def add_text(text: str, language_code: str, script_id:str):
     })    # 문서 객체로 변환
     vectordb = init_vectordb()
     vectordb.add_documents([doc])                      # 벡터 DB에 추가
-    
-# 유사 텍스트 검색
-def search_text(query: str, top_k: int = 3, meta_data: dict = {}):
-    return vectordb.similarity_search(query, k=top_k, filter=meta_data)  # 유사한 문장 k개 반환
