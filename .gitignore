@@ -8,3 +8,5 @@ sraga/
 .chroma_db/.gitkeep
 test.ipynb
 *.pem
+vector_db/
+script/

@@ -21,7 +21,7 @@ async def create_script(user_id: int, db: AsyncSession = Depends(get_db)):
         logger.error(f"Error creating log script: {str(e)}")
         return {"message": "Internal server error"}, 500
 
-@router.get("/{user_id}")
+@router.get("/all/{user_id}")
 async def get_scripts_by_user_id(user_id: int, db: AsyncSession = Depends(get_db)):
     """
     ## 유저 ID로 스크립트 조회
@@ -35,4 +35,20 @@ async def get_scripts_by_user_id(user_id: int, db: AsyncSession = Depends(get_db
             return {"message": "No scripts found for this user"}, 404
     except Exception as e:
         logger.error(f"Error retrieving scripts: {str(e)}")
+        return {"message": "Internal server error"}, 500
+    
+@router.get("/{script_id}")
+async def get_script_by_id(script_id: str, db: AsyncSession = Depends(get_db)):
+    """
+    ## 스크립트 ID로 스크립트 조회
+    - script_id: 스크립트 ID
+    """
+    try:
+        script = await service.get_script_by_id(db, script_id)
+        if script:
+            return script
+        else:
+            return {"message": "Script not found"}, 404
+    except Exception as e:
+        logger.error(f"Error retrieving script: {str(e)}")
         return {"message": "Internal server error"}, 500
