@@ -89,7 +89,7 @@
       const interimEl = document.getElementById("interim");
 
       window.onload = () => {
-        socket = new WebSocket("ws://localhost:8000/stt/websocket/");
+        socket = new WebSocket("ws://localhost:8000/stt/websocket");
         socket.binaryType = "arraybuffer";
 
         socket.onopen = () => {
