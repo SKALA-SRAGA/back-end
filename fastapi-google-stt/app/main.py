@@ -4,6 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.api import stt_router, openai_router, user_router, script_router, receipt_router
 from app.db.reset_database import reset_database
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI()
 
