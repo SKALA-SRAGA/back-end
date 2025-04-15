@@ -5,3 +5,10 @@ python-dotenv
 langchain-openai
 langchain-teddynote
 langchain-core
+langchain-chroma
+aiomysql
+websockets
+langchain-embeddings
+python-docx
+langchain_community
+python-multipart

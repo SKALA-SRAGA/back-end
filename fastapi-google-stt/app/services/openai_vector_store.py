@@ -1,4 +1,3 @@
-# vector_store_openai.py - vector 저장
 import os
 from datetime import datetime
 from dotenv import load_dotenv
@@ -7,6 +6,9 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.schema import Document
 
 load_dotenv()
+
+OPENAI_API_KEY=os.getenv("OPENAI_API_KEY")
+VECTOR_DB_PATH=os.getenv("VECTOR_DB_PATH")
 
 # Chroma 벡터스토어 초기화
 def init_vectordb():
