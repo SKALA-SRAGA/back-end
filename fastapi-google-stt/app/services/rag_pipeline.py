@@ -7,10 +7,10 @@ import os
 llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0.2, openai_api_key=os.getenv("OPENAI_API_KEY"))
 
 # 질의응답 함수
-def answer_question(query: str, meeting_id: str, lang:str = "ko-KR"):
+def answer_question(query: str, script_id: str, collection_num: int=0):
 
     # 1. 회의 문서 리트리버 초기화 (meeting_id & lang 필터 적용)
-    retriever = get_meeting_retriever(meeting_id=meeting_id, lang=lang)
+    retriever = get_meeting_retriever(script_id=script_id, collection_num=collection_num)
 
     # 2. Retrieval QA 체인 생성 (LLM + Retriever 연결)
     qa_chain = RetrievalQA.from_chain_type(

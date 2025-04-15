@@ -25,15 +25,15 @@ prompt = PromptTemplate.from_template("""
 """)
 
 # 회의 문서 요약 함수
-def summarize_meeting(meeting_id: str, lang: str = "ko-KR", default:str = default):
+def summarize_meeting(script_id: str, collection_num: int = 0, default:str = default):
 
-    # 1. 벡터DB 초기화 및 문서 검색 (meeting_id + lang 필터)
-    vectordb = init_vectordb()              
+    # 1. 벡터DB 초기화 및 문서 검색 (script_id + lang 필터)
+    vectordb = init_vectordb(collection_num)              
 
     docs = vectordb.similarity_search(
         query="회의 요약",                   # 의미 없는 쿼리로 문서만 불러올 수 있음
         k=100,
-        filter={"meeting_id": "meeting1"}   # 회의 ID 기준
+        filter={"script_id": script_id}   # 회의 ID 기준
     )
 
     # 2. 문서가 없을 경우 예외 메시지 반환
