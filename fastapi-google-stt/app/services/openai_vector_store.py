@@ -23,7 +23,7 @@ def init_vectordb(collection_num: int):
         persist_directory=VECTOR_DB_PATH)     # 저장 경로
 
 # 텍스트를 임베딩하고 DB에 저장하는 함수
-def add_text(text: str, script_id:str, collection_num:int):
+async def add_text(text: str, script_id:str, collection_num:int):
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S") # 현재 시간
 
     source = "stt" if collection_num == 0 else "summary"
@@ -36,4 +36,3 @@ def add_text(text: str, script_id:str, collection_num:int):
 
     vectordb = init_vectordb(collection_num)
     vectordb.add_documents([doc])                      # 벡터 DB에 추가
-    vectordb.persist()                                 # 디스크 저장
