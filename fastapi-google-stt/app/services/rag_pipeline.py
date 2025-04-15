@@ -15,9 +15,9 @@ llm = ChatOpenAI(
 )
 
 # 질의응답 함수
-async def answer_question(query: str, script_id: str):
+async def answer_question(query: str, script_id: str, collection_num: int=0):
     # 1. 회의 문서 리트리버 초기화
-    retriever = get_meeting_retriever(script_id=script_id)
+    retriever = get_meeting_retriever(script_id=script_id, collection_num=collection_num)
     
     # 2. 프롬프트 템플릿 생성
     prompt = ChatPromptTemplate.from_template("""
