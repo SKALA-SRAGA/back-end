@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.entity.script import Script
 from app.dto.message_request import MessageRequest
-from app.dto.script_id_reponse import ScriptIdResponse
+from app.dto.script_reponse import ScriptResponse
 
 speacker = None
 file = None
@@ -24,7 +24,7 @@ load_dotenv()
 
 PATH = os.getenv("SCRIPT_PATH")
 
-async def create(db: AsyncSession, user_id: int, name: str) -> ScriptIdResponse:
+async def create(db: AsyncSession, user_id: int, name: str) -> ScriptResponse:
     """
     스크립트를 생성하는 함수
     """
@@ -34,7 +34,7 @@ async def create(db: AsyncSession, user_id: int, name: str) -> ScriptIdResponse:
     
     await create_script(db, script)
 
-    return ScriptIdResponse(id=id)
+    return ScriptResponse(id=id, name=name)
 
 async def get_scripts_by_user_id(db: AsyncSession, user_id: int) -> list | None:
     """
@@ -43,7 +43,7 @@ async def get_scripts_by_user_id(db: AsyncSession, user_id: int) -> list | None:
     scripts = await find_script_by_user_id(db, user_id)
 
     # Script 객체를 ScriptIdResponse로 변환
-    return [ScriptIdResponse(id=script.id) for script in scripts]
+    return [ScriptResponse(id=script.id, name=script.name) for script in scripts]
 
 async def get_script_by_id(db: AsyncSession, script_id: str) -> Script | None:
     """

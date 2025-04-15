@@ -19,7 +19,7 @@ from app.db.repository.receipt_repository import (
     create,
     find_receipt_by_user_id,
 )
-from app.dto.receipt_id_response import ReceiptIdResponse
+from app.dto.receipt_response import ReceiptResponse
 
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -42,7 +42,7 @@ async def get_my_receipts(db: AsyncSession, user_id: int) -> list:
     receipts = await find_receipt_by_user_id(db, user_id)
 
     # Receipt 객체를 ReceiptIdResponse로 변환
-    return [ReceiptIdResponse(id=receipt.id) for receipt in receipts]
+    return [ReceiptResponse(id=receipt.id, name=receipt.name) for receipt in receipts]
 
 # 이미지 인코딩 함수
 def resize_and_encode_image(image_path: str, max_width: int = 300) -> str:
