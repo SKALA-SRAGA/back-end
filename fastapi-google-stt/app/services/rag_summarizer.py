@@ -6,9 +6,8 @@ from app.services.openai_vector_store import init_vectordb
 
 llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0)
 
-
 # 기본 요약 항목 템플릿 (사용자가 변경 가능하도록 외부로 분리)
-default = """
+summary_default = """
 - 회의 주제 요약
 - 주요 결정 사항
 - 남은 이슈/추후 할 일
@@ -16,7 +15,7 @@ default = """
 """
 
 prompt = PromptTemplate.from_template("""
-다음 회의록 내용을 읽고, 아래 항목으로 요약해줘:
+다음은 회의록입니다. 핵심 내용을 요약해 주세요.:
 
 {default}
 
@@ -24,12 +23,12 @@ prompt = PromptTemplate.from_template("""
 {docs}
 """)
 
+
 # 회의 문서 요약 함수
-def summarize_meeting(script_id: str, collection_num: int = 0, default:str = default):
+def summarize_meeting(script_id: str, collection_num: int = 0, summary_contents:str = summary_default):
 
     # 1. 벡터DB 초기화 및 문서 검색 (script_id + lang 필터)
-    vectordb = init_vectordb(collection_num)              
-
+    vectordb = init_vectordb(collection_num)
     docs = vectordb.similarity_search(
         query="회의 요약",                   # 의미 없는 쿼리로 문서만 불러올 수 있음
         k=100,
@@ -43,7 +42,7 @@ def summarize_meeting(script_id: str, collection_num: int = 0, default:str = def
     # 3. 요약 체인 만들기(stuff 체인: 문서를 한 번에 처리)
     chain = load_summarize_chain(
         llm, chain_type="stuff", 
-        prompt=prompt.partial(default=default),
+        prompt=prompt.partial(default=summary_contents),
         document_variable_name="docs")
 
     # 4. 요약 실행
