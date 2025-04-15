@@ -1,16 +1,18 @@
 # rag_pipeline.py
 from app.services.vector_retriever import get_meeting_retriever
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.prompts import ChatPromptTemplate
 import os
 import json
 
+OPENAI_API_KEY=os.getenv("OPENAI_API_KEY")
+
 llm = ChatOpenAI(
     model_name="gpt-4o-mini", 
     temperature=0.2, 
-    openai_api_key=os.getenv("OPENAI_API_KEY"),
+    openai_api_key=OPENAI_API_KEY,
     streaming=True
 )
 
