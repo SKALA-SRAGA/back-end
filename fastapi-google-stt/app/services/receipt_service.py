@@ -8,6 +8,7 @@ import re
 import uuid
 import logging
 
+from fastapi import HTTPException
 from dotenv import load_dotenv
 from langchain_community.chat_models import ChatOpenAI
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -51,7 +52,12 @@ async def get_my_receipts(db: AsyncSession, user_id: int) -> list:
     # Receipt 객체를 ReceiptIdResponse로 변환
     try:
         receipts = await find_receipt_by_user_id(db, user_id)
+        if not receipts:
+            raise HTTPException(status_code=404, detail=f"Receipt By {user_id} Not Found ")
         return [ReceiptResponse(id=receipt.id, name=receipt.name) for receipt in receipts]
+    except HTTPException:
+        # 이미 처리된 HTTPException은 그대로 전달
+        raise
     except Exception as e:
         logger.error(f"Error in get_my_receipts: {str(e)}")
         raise Exception(f"Failed to retrieve receipts: {str(e)}")
