@@ -35,7 +35,7 @@ async def create(db: AsyncSession, user_id: int, name: str) -> ScriptResponse:
     
     await create_script(db, script)
 
-    return ScriptResponse(id=id, name=name)
+    return ScriptResponse(id=id, created_date=script.created_date, name=name)
 
 async def get_scripts_by_user_id(db: AsyncSession, user_id: int) -> list | None:
     """
@@ -47,7 +47,7 @@ async def get_scripts_by_user_id(db: AsyncSession, user_id: int) -> list | None:
         raise HTTPException(status_code=404, detail=f"Script with ID {user_id} not found")
 
     # Script 객체를 ScriptIdResponse로 변환
-    return [ScriptResponse(id=script.id, name=script.name) for script in scripts]
+    return [ScriptResponse(id=script.id, created_date=script.created_date, name=script.name) for script in scripts]
 
 async def get_script_by_id(db: AsyncSession, script_id: str) -> Script | None:
     """
