@@ -1,5 +1,5 @@
 import logging
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, HTTPException, Depends
 import app.services.user_service as service
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
@@ -18,11 +18,11 @@ async def get_user(name: str, db: AsyncSession = Depends(get_db)):
         user = await service.get_user_by_name(db, name)
         if user:
             return user
-        else:
-            return {"message": "User not found"}, 404
+    except HTTPException as http_exc:
+        raise http_exc  # 상태코드 유지
     except Exception as e:
-        logger.error(f"Error retrieving user: {str(e)}")
-        return {"message": "Internal server error"}, 500
+        logger.error(f"Unhandled error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
 @router.get("/id/{user_id}")
 async def get_user_by_id(user_id: int, db: AsyncSession = Depends(get_db)):
@@ -34,11 +34,11 @@ async def get_user_by_id(user_id: int, db: AsyncSession = Depends(get_db)):
         user = await service.get_user_by_id(db, user_id)
         if user:
             return user
-        else:
-            return {"message": "User not found"}, 404
+    except HTTPException as http_exc:
+        raise http_exc  # 상태코드 유지
     except Exception as e:
-        logger.error(f"Error retrieving user: {str(e)}")
-        return {"message": "Internal server error"}, 500
+        logger.error(f"Unhandled error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
 @router.post("/register")
 async def register_user(user: service.CreateUserRequest, db: AsyncSession = Depends(get_db)):
@@ -50,9 +50,11 @@ async def register_user(user: service.CreateUserRequest, db: AsyncSession = Depe
     try:
         new_user = await service.register(db, user)
         return new_user
+    except HTTPException as http_exc:
+        raise http_exc  # 상태코드 유지
     except Exception as e:
-        logger.error(f"Error registering user: {str(e)}")
-        return {"message": "Internal server error"}, 500
+        logger.error(f"Unhandled error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
     
 @router.patch("/update/{user_id}")
 async def update_user(user_id: int, user: service.UpdateUserRequest, db: AsyncSession = Depends(get_db)):
@@ -69,9 +71,11 @@ async def update_user(user_id: int, user: service.UpdateUserRequest, db: AsyncSe
         
         updated_user = await service.update(db, user, original_user)
         return updated_user
+    except HTTPException as http_exc:
+        raise http_exc  # 상태코드 유지
     except Exception as e:
-        logger.error(f"Error updating user: {str(e)}")
-        return {"message": "Internal server error"}, 500
+        logger.error(f"Unhandled error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
     
 @router.delete("/delete/{user_id}")
 async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
@@ -86,6 +90,8 @@ async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
         
         await service.delete(db, original_user)
         return {"message": "User deleted successfully"}
+    except HTTPException as http_exc:
+        raise http_exc  # 상태코드 유지
     except Exception as e:
-        logger.error(f"Error deleting user: {str(e)}")
-        return {"message": "Internal server error"}, 500
+        logger.error(f"Unhandled error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")

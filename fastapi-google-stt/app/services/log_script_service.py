@@ -11,6 +11,7 @@ import os
 import uuid
 import base64
 
+from fastapi import HTTPException
 from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.entity.script import Script
@@ -42,6 +43,9 @@ async def get_scripts_by_user_id(db: AsyncSession, user_id: int) -> list | None:
     """
     scripts = await find_script_by_user_id(db, user_id)
 
+    if not scripts:
+        raise HTTPException(status_code=404, detail=f"Script with ID {user_id} not found")
+
     # Script 객체를 ScriptIdResponse로 변환
     return [ScriptResponse(id=script.id, name=script.name) for script in scripts]
 
@@ -52,7 +56,7 @@ async def get_script_by_id(db: AsyncSession, script_id: str) -> Script | None:
     script = await find_script_by_id(db, script_id)
 
     if not script:
-        raise ValueError(f"Script with ID {script_id} not found")
+        raise HTTPException(status_code=404, detail=f"Script with ID {script_id} not found")
 
     # 파일 경로 가져오기
     file_path = script.file_path
@@ -75,12 +79,12 @@ async def logger(db: AsyncSession, data: MessageRequest, script_id: str):
     - script_id: 스크립트 ID
     """
     # script_id로 스크립트 조회
-    script = await find_script_by_id(db, script_id)
-    if not script:
-        raise ValueError(f"Script with ID {script_id} not found")
+    scripts = await find_script_by_id(db, script_id)
+    if not scripts:
+        raise HTTPException(status_code=404, detail=f"Script with ID {script_id} not found")
 
     # 파일 경로 가져오기
-    file_path = script.file_path
+    file_path = scripts.file_path
 
     # 파일이 없으면 새로 생성
     if not os.path.exists(file_path):
