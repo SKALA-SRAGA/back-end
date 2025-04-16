@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.database import Base
@@ -20,4 +20,3 @@ class User(Base):
         cascade="all, delete-orphan",
         lazy="dynamic"  # ✅ 비동기 처리를 위해 lazy="selectin" 사용
     )
-
