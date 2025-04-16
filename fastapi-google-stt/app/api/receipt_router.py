@@ -8,6 +8,7 @@ import shutil
 import os
 from pathlib import Path
 import json
+import logging
 
 from app.services.docs_service import create_expense_report
 from app.services.receipt_service import (
@@ -18,6 +19,8 @@ from app.services.receipt_service import (
 )
 
 router = APIRouter()
+
+logger = logging.getLogger(__name__)
 
 # 임시 저장소 경로
 TEMP_DIR = Path("temp_images")
@@ -108,7 +111,8 @@ async def get_receipts_by_user_id(user_id: str, db: AsyncSession = Depends(get_d
         receipts = await get_my_receipts(db, user_id)
         if receipts:
             return receipts
-        else:
-            return {"message": "No receipts found for this user"}, 404
+    except HTTPException as http_exc:
+        raise http_exc  # 상태코드 유지
     except Exception as e:
-        return {"message": "Internal server error"}, 500
+        logger.error(f"Unhandled error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
