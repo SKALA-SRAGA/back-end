@@ -47,14 +47,14 @@ async def answer_question(query: str, script_id: str, collection_num: int=0):
         async for chunk in rag_chain.astream(query):
             yield f"data: {chunk}\n\n"
         
-        # 5. 스트리밍 완료 후 소스 문서 전송
-        docs = await retriever.ainvoke(query)
-        for doc in docs:
-            # source_info = {
-            #     "content": doc.page_content,
-            #     "metadata": doc.metadata
-            # }
-            yield f"data: Content: {doc.page_content}\n\n"
+        # # 5. 스트리밍 완료 후 소스 문서 전송
+        # docs = await retriever.ainvoke(query)
+        # for doc in docs:
+        #     # source_info = {
+        #     #     "content": doc.page_content,
+        #     #     "metadata": doc.metadata
+        #     # }
+        #     yield f"data: Content: {doc.page_content}\n\n"
             
     except Exception as e:
         yield f"data: Error: {str(e)}\n\n"
