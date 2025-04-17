@@ -46,7 +46,7 @@ def is_100_unit_currency(cur_unit: str) -> bool:
     return "(100)" in cur_unit
 
 
-def get_exchange_rate_safe(currency_code: str, search_date: str = None) -> int:
+def get_exchange_rate_safe(currency_code: str, search_date: str = None) -> float:
     """안전하게 환율 정보를 가져옵니다."""
     if currency_code == "KRW":
         return 1
@@ -90,14 +90,14 @@ def get_exchange_rate_safe(currency_code: str, search_date: str = None) -> int:
                     rate = rate / 100
 
                 logging.info(
-                    f"[환율 조회 성공] {currency_code} = {int(rate)} KRW ({search_date})"
+                    f"[환율 조회 성공] {currency_code} = {float(rate)} KRW ({search_date})"
                 )
-                return int(rate)
+                return float(rate)
 
         logging.warning(f"[환율 미존재] {currency_code}는 응답에 없음. 기본값 사용")
     except Exception as e:
         logging.warning(f"[환율 오류] {currency_code} 환율 조회 실패: {e}")
 
-    fallback = int(DEFAULT_RATES.get(currency_code, 1))
+    fallback = float(DEFAULT_RATES.get(currency_code, 1))
     logging.info(f"[기본 환율 사용] {currency_code} = {fallback}")
     return fallback
