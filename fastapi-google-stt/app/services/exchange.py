@@ -1,4 +1,3 @@
-import certifi
 import requests
 import os
 import logging
@@ -65,7 +64,7 @@ def get_exchange_rate_safe(currency_code: str, search_date: str = None) -> float
 
     try:
         logging.info(f"[환율 API 요청] 통화: {currency_code}, 날짜: {search_date}")
-        response = requests.get(API_URL, params=params, headers=headers, timeout=5, verify=certifi.where())
+        response = requests.get(API_URL, params=params, headers=headers, timeout=5, verify=False)
         logging.info(f"[환율 API 응답] 상태 코드: {response.status_code}")
         response.raise_for_status()
         exchange_data = response.json()
